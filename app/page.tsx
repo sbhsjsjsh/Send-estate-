@@ -29,12 +29,51 @@ export default function Home() {
     name: '',
     price: '',
     image: SAMPLE_IMAGES[0].url,
+    images: [],
     description: '',
     location: ''
   });
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEmbedding, setIsEmbedding] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024) { // 100KB limit for embedding
+      alert("Image is too large to embed directly. Please use an image URL or a smaller image (under 100KB) to keep the WhatsApp link working.");
+      return;
+    }
+
+    setIsEmbedding(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setFormData(prev => ({ ...prev, image: base64String }));
+      setIsEmbedding(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const addImageField = () => {
+    setFormData(prev => ({
+      ...prev,
+      images: [...(prev.images || []), '']
+    }));
+  };
+
+  const updateImageField = (index: number, val: string) => {
+    const newImages = [...(formData.images || [])];
+    newImages[index] = val;
+    setFormData(prev => ({ ...prev, images: newImages }));
+  };
+
+  const removeImageField = (index: number) => {
+    const newImages = (formData.images || []).filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, images: newImages }));
+  };
 
   const handleGenerate = () => {
     if (!formData.name || !formData.price || !formData.image) {
@@ -125,18 +164,57 @@ export default function Home() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-neutral-700">Photo URL</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Paste image link here..."
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                />
-                <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+            <div className="space-y-4">
+              <label className="text-sm font-semibold text-neutral-700 block">Main Property Photo</label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative group">
+                  <input
+                    type="text"
+                    placeholder="Paste image URL..."
+                    className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm"
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  />
+                  <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                </div>
+                
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="embed-upload"
+                  />
+                  <label
+                    htmlFor="embed-upload"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-neutral-300 hover:border-amber-500 hover:bg-amber-50 cursor-pointer transition-all text-sm text-neutral-500 font-medium"
+                  >
+                    {isEmbedding ? (
+                      <div className="w-4 h-4 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    <span>Embed Direct Image</span>
+                  </label>
+                </div>
               </div>
+
+              {formData.image.startsWith('data:image') && (
+                <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span className="text-xs text-amber-800 font-medium">Image embedded successfully</span>
+                  </div>
+                  <button 
+                    onClick={() => setFormData({ ...formData, image: SAMPLE_IMAGES[0].url })}
+                    className="text-xs text-amber-600 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
               
               <div className="pt-2">
                 <p className="text-xs text-neutral-400 mb-2 font-medium">OR CHOOSE A SAMPLE PHOTO</p>
@@ -164,6 +242,43 @@ export default function Home() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* Multi-Image Section */}
+            <div className="space-y-4 pt-4 border-t border-neutral-100">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-neutral-700">Additional Photos (Optional)</label>
+                <button
+                  onClick={addImageField}
+                  className="text-xs font-bold text-amber-600 flex items-center gap-1 hover:underline"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Photo
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.images?.map((url, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        placeholder="Additional photo URL..."
+                        className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm"
+                        value={url}
+                        onChange={(e) => updateImageField(idx, e.target.value)}
+                      />
+                      <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    </div>
+                    <button
+                      onClick={() => removeImageField(idx)}
+                      className="p-2.5 bg-neutral-100 text-neutral-500 rounded-xl hover:bg-red-50 hover:text-red-500 transition-colors"
+                    >
+                      <Plus className="w-5 h-5 rotate-45" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -218,6 +333,12 @@ export default function Home() {
                       className="object-cover"
                       referrerPolicy="no-referrer"
                     />
+                  )}
+                  {formData.images && formData.images.filter(u => u.trim() !== '').length > 0 && (
+                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                      <ImageIcon className="w-3 h-3" />
+                      +{formData.images.filter(u => u.trim() !== '').length} MORE
+                    </div>
                   )}
                 </div>
                 <div className="p-4">

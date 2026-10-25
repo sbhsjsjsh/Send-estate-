@@ -1,7 +1,8 @@
 export interface PropertyData {
   name: string;
   price: string;
-  image: string;
+  image: string; // Primary image
+  images?: string[]; // Additional images
   description?: string;
   location?: string;
 }

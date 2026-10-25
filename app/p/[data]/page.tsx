@@ -105,6 +105,30 @@ export default function PropertyShowcase({ params }: { params: Promise<{ data: s
               </p>
             </div>
 
+            {/* Additional Images Gallery */}
+            {property.images && property.images.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Gallery</h3>
+                <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-hide">
+                  {property.images.filter(url => url.trim() !== '').map((url, idx) => (
+                    <motion.div
+                      key={idx}
+                      whileHover={{ scale: 1.05 }}
+                      className="relative min-w-[200px] h-[150px] rounded-2xl overflow-hidden shadow-md flex-shrink-0"
+                    >
+                      <Image
+                        src={url}
+                        alt={`${property.name} gallery ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
                 <p className="text-xs text-neutral-400 uppercase tracking-wider font-semibold mb-1">Category</p>
