@@ -13,7 +13,8 @@ import {
   Share2, 
   Smartphone,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  User
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -31,7 +32,8 @@ export default function Home() {
     image: SAMPLE_IMAGES[0].url,
     images: [],
     description: '',
-    location: ''
+    location: '',
+    agentName: ''
   });
   const [generatedLink, setGeneratedLink] = useState('');
   const [copied, setCopied] = useState(false);
@@ -86,7 +88,9 @@ export default function Home() {
     // Simulate a brief generation period for effect
     setTimeout(() => {
       const encoded = encodeProperty(formData);
-      const url = `${window.location.origin}/p/${encoded}`;
+      const baseUrl = window.location.origin;
+      const usernamePath = formData.agentName ? `/${encodeURIComponent(formData.agentName.toLowerCase().replace(/\s+/g, ''))}` : '';
+      const url = `${baseUrl}${usernamePath}/p/${encoded}`;
       setGeneratedLink(url);
       setIsGenerating(false);
     }, 600);
@@ -151,6 +155,20 @@ export default function Home() {
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-neutral-700">Custom Name / Agent Name (Optional)</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="e.g. Sakir"
+                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all"
+                  value={formData.agentName}
+                  onChange={(e) => setFormData({ ...formData, agentName: e.target.value })}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-300">VANITY URL</span>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -342,6 +360,12 @@ export default function Home() {
                   )}
                 </div>
                 <div className="p-4">
+                  {formData.agentName && (
+                    <div className="flex items-center gap-1 mb-2 bg-amber-50 w-fit px-2 py-0.5 rounded-full border border-amber-100">
+                      <User className="w-2.5 h-2.5 text-amber-600" />
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-amber-700">Listed by {formData.agentName}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-bold text-lg leading-tight truncate mr-2">
                       {formData.name || 'Property Name'}

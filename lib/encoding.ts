@@ -5,6 +5,7 @@ export interface PropertyData {
   images?: string[]; // Additional images
   description?: string;
   location?: string;
+  agentName?: string;
 }
 
 export function encodeProperty(data: PropertyData): string {
