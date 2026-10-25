@@ -1,0 +1,6 @@
+{
+  "name": "Send Estate",
+  "description": "Generate beautiful, shareable property links without a database. Perfect for WhatsApp sharing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
